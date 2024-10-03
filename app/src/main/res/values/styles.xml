@@ -5,7 +5,7 @@
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowFullscreen">true</item>
         <item name="android:windowCloseOnTouchOutside">true</item>
-        <item name="android:windowBackground">@color/white</item>
+        <item name="android:windowBackground">@drawable/inset_custom_dialog</item>
         <item name="android:windowIsFloating">true</item>
     </style>
 </resources>

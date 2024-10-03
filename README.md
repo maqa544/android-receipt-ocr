@@ -3,7 +3,7 @@
 An Android app built to scan receipts using ML Kit's OCR capabilities. The goal of the project is to extract item names and prices from receipts.
 
 ## Done so far
-- Getting image, Showing recognized text, Displaying raw text from a receipt.
+- Getting image, Showing recognized text, Displaying raw text from a receipt
 - Organizing text elements as on a receipt by comparing `Text.Element.boundingBox` (Item names and prices in one line)
 
 ## Goals

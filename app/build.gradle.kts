@@ -53,5 +53,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(libs.android.image.cropper)
-    implementation ("com.google.mlkit:text-recognition:16.0.1")
+    implementation (libs.text.recognition)
 }

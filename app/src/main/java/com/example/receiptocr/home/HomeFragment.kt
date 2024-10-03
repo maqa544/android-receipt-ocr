@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
+import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import com.canhub.cropper.CropImageContract
@@ -15,6 +16,8 @@ import com.canhub.cropper.CropImageView
 import com.example.receiptocr.R
 import com.example.receiptocr.base.BaseFragment
 import com.example.receiptocr.databinding.FragmentHomeBinding
+import com.example.receiptocr.dialogs.ResultDialog
+import com.google.android.material.snackbar.Snackbar
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.TextRecognition
@@ -58,23 +61,34 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         }
         binding.btnScan.setOnClickListener { // Start OCR if there is an image
             if (::cropped.isInitialized) {
+                showSnackBar("Scanning...", it)
                 val image = InputImage.fromBitmap(cropped, 0)
                 val result = recognizer.process(image)
                     .addOnSuccessListener { visionText ->
-                        processResultText(visionText)
+                        processResultText(visionText, it)
                         showOutputImage()
-                    } //No text or image
+                    }
                     .addOnFailureListener { e ->
-                        Toast.makeText(requireContext(), "No text found", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(requireContext(), "Error -> ${e.message}", Toast.LENGTH_SHORT).show()
                     }
             } else {
-                Toast.makeText(requireContext(), "Add image first", Toast.LENGTH_SHORT).show()
+                showSnackBar("Add image first", it)
             }
         }
+        binding.btnResult.setOnClickListener {
+            ResultDialog().show(childFragmentManager, ResultDialog.TAG)
+        }
+
+
         super.observeView()
     }
 
-    fun processResultText(vText: Text){
+    fun processResultText(vText: Text, contextView: View){
+        if(vText.text.isBlank()) {
+            Toast.makeText(requireContext(), "No text found, try again", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         blocksRect.clear()
         linesRect.clear()
         elementsRect.clear()
@@ -97,7 +111,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         for (line in organizeElements(elementsText)) { // Sorting elements
             sortedText.add(line.joinToString(separator = " ") { it.text })
         }
-        binding.tvOutput.text = sortedText.joinToString(separator = "\n") // Displaying sorted text
+        binding.tvOutput.text = sortedText.joinToString(separator = "\n") // Displaying organized text
     }
 
     fun showOutputImage(){
@@ -131,10 +145,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
             // Try to find a line this element fits into
             for (line in sortedLines) {
-                if (isSameLine(line.first(), element)) {
+                if (isElsSameLine(line.first(), element)) {
                     // Add to existing line and sort
                     line.add(element)
-                    line.sortWith(Comparator { t1, t2 -> compare(t1, t2) })
+                    line.sortWith(Comparator { t1, t2 -> compareEls(t1, t2) })
                     addedToLine = true
                     break
                 }
@@ -149,7 +163,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         return sortedLines
     }
 
-    fun compare(t1: Text.Element, t2: Text.Element): Int { // Comparing top and left coordinates to sort elements
+    fun compareEls(t1: Text.Element, t2: Text.Element): Int { // Comparing top and left coordinates to sort elements
         val diffOfTops = t1.boundingBox!!.top - t2.boundingBox!!.top
         val diffOfLefts = t1.boundingBox!!.left - t2.boundingBox!!.left
 
@@ -163,7 +177,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         return result
     }
 
-    private fun isSameLine(t1: Text.Element, t2: Text.Element): Boolean {
+    private fun isElsSameLine(t1: Text.Element, t2: Text.Element): Boolean {
         val diffOfTops = t1.boundingBox!!.top - t2.boundingBox!!.top
 
         val height = ((t1.boundingBox!!.height() + t2.boundingBox!!
@@ -175,7 +189,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         return true
     }
 
+    fun showSnackBar(text: String, contextView: View){
+        val z = Snackbar.make(contextView, text, 800)
+            .show()
 
+    }
 }
 
 
