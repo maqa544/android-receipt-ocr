@@ -31,7 +31,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     private val elementsRect = mutableListOf<Rect>()
     private val elementsText = mutableListOf<Text.Element>() //All text elements
     private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+    private var originalText:String = ""
     lateinit var cropped: Bitmap
+    var rotation: Int = 0
     private lateinit var cropImage: ActivityResultLauncher<CropImageContractOptions>
     private val cropImageContractOptions = CropImageContractOptions(
         null,
@@ -50,6 +52,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
             if (result.isSuccessful) {
                 cropped =
                     BitmapFactory.decodeFile(result.getUriFilePath(requireContext(), true))
+                rotation = result.rotation
                 binding.ivImage.setImageBitmap(cropped) // Displaying image in home screen
             }
         }
@@ -62,11 +65,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         binding.btnScan.setOnClickListener { // Start OCR if there is an image
             if (::cropped.isInitialized) {
                 showSnackBar("Scanning...", it)
-                val image = InputImage.fromBitmap(cropped, 0)
+                val image = InputImage.fromBitmap(cropped, rotation)
                 val result = recognizer.process(image)
                     .addOnSuccessListener { visionText ->
                         processResultText(visionText, it)
                         showOutputImage()
+                        originalText = visionText.text
                     }
                     .addOnFailureListener { e ->
                         Toast.makeText(requireContext(), "Error -> ${e.message}", Toast.LENGTH_SHORT).show()
@@ -76,7 +80,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
             }
         }
         binding.btnResult.setOnClickListener {
-            ResultDialog().show(childFragmentManager, ResultDialog.TAG)
+            ResultDialog(originalText).show(childFragmentManager, ResultDialog.TAG)
         }
 
 
@@ -107,11 +111,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         }
         elementsText //Text.Elements List
 
-        val sortedText = mutableListOf<String>()
-        for (line in organizeElements(elementsText)) { // Sorting elements
-            sortedText.add(line.joinToString(separator = " ") { it.text })
-        }
-        binding.tvOutput.text = sortedText.joinToString(separator = "\n") // Displaying organized text
+        binding.tvOutput.text = organizeElements(elementsText).joinToString(separator = "\n") // Displaying organized text
     }
 
     fun showOutputImage(){
@@ -137,31 +137,45 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         binding.ivOutImage.setImageBitmap(mutableBitmap)
     }
 
-    fun organizeElements(elements: List<Text.Element>): List<List<Text.Element>> {
-        val sortedLines = mutableListOf<MutableList<Text.Element>>()
+    fun organizeElements(elements: List<Text.Element>): List<String> {
+        // Sort elements first based on their vertical position (top of the bounding box),
+        // then based on the horizontal position (left of the bounding box).
+        val sortedElements = elements.sortedWith { t1, t2 -> compareEls(t1, t2) }
 
-        for (element in elements) {
-            var addedToLine = false
+        val lines = mutableListOf<MutableList<Text.Element>>()
 
-            // Try to find a line this element fits into
-            for (line in sortedLines) {
-                if (isElsSameLine(line.first(), element)) {
-                    // Add to existing line and sort
+        // Group elements into lines
+        for (element in sortedElements) {
+            var foundLine = false
+            // Check if element belongs to an existing line
+            for (line in lines) {
+                if (isElsSameLine(line[0], element)) {
                     line.add(element)
-                    line.sortWith(Comparator { t1, t2 -> compareEls(t1, t2) })
-                    addedToLine = true
+                    foundLine = true
                     break
                 }
             }
-
-            // If the element doesn't fit into an existing line, create a new line
-            if (!addedToLine) {
-                sortedLines.add(mutableListOf(element))
+            // If element does not belong to any line, start a new line
+            if (!foundLine) {
+                lines.add(mutableListOf(element))
             }
         }
 
-        return sortedLines
+        // Convert each line of elements into a string with spacing
+        val result = mutableListOf<String>()
+        for (line in lines) {
+            // Sort each line's elements horizontally (left to right)
+            val sortedLine = line.sortedBy { it.boundingBox!!.left }
+
+            // Combine elements into a single string with only one space between them
+            val lineText = sortedLine.joinToString(" ") { it.text }
+
+            result.add(lineText)
+        }
+
+        return result
     }
+
 
     fun compareEls(t1: Text.Element, t2: Text.Element): Int { // Comparing top and left coordinates to sort elements
         val diffOfTops = t1.boundingBox!!.top - t2.boundingBox!!.top
@@ -190,7 +204,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     }
 
     fun showSnackBar(text: String, contextView: View){
-        val z = Snackbar.make(contextView, text, 800)
+        Snackbar.make(contextView, text, 800)
             .show()
 
     }
