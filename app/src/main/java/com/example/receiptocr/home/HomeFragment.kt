@@ -15,8 +15,13 @@ import com.canhub.cropper.CropImageOptions
 import com.canhub.cropper.CropImageView
 import com.example.receiptocr.R
 import com.example.receiptocr.base.BaseFragment
+import com.example.receiptocr.data.ReceiptItem
+import com.example.receiptocr.data.ResultModel
 import com.example.receiptocr.databinding.FragmentHomeBinding
 import com.example.receiptocr.dialogs.ResultDialog
+import com.example.receiptocr.utils.findFloat
+import com.example.receiptocr.utils.findSecondLargestFloat
+import com.example.receiptocr.utils.receiptItemRegex
 import com.example.receiptocr.utils.rotate
 import com.google.android.material.snackbar.Snackbar
 import com.google.mlkit.vision.common.InputImage
@@ -24,6 +29,7 @@ import com.google.mlkit.vision.text.Text
 import com.google.mlkit.vision.text.Text.Element
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import java.util.Collections
 import kotlin.math.abs
 
 
@@ -34,6 +40,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
     private val elementsText = mutableListOf<Text.Element>() //All text elements
     private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
     private var originalText: String = ""
+    private var result = ResultModel(receiptItems = emptyList())
     lateinit var cropped: Bitmap
     var rotation: Int = 0
     private lateinit var cropImage: ActivityResultLauncher<CropImageContractOptions>
@@ -88,7 +95,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         }
 
         binding.btnResult.setOnClickListener { // Show Results Dialog
-            ResultDialog(originalText).show(childFragmentManager, ResultDialog.TAG)
+            ResultDialog(result).show(childFragmentManager, ResultDialog.TAG)
         }
 
         super.observeView()
@@ -132,10 +139,41 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
                 }
             }
         }
+
         elementsText //Text.Elements List
 
-        binding.tvOutput.text =
-            organizeElements(elementsText).joinToString(separator = "\n") // Displaying organized text
+        val organizedList = organizeElements(elementsText)
+        val outputText = organizedList.joinToString(separator = "\n")
+        result = getResults(organizedList, outputText)
+
+        binding.tvOutput.text = outputText // Displaying organized text
+    }
+
+    fun getResults(list: List<String>, wholeText: String): ResultModel {
+        var total = 0f
+        var tax = 0f
+        val itemsList = mutableListOf<ReceiptItem>()
+
+        val floatResults = wholeText.findFloat() // Finding Total price and Tax
+        if (floatResults.isNotEmpty()) {
+            val totalF = Collections.max(floatResults)
+            val secondLargestF = findSecondLargestFloat(floatResults)
+            val taxF = if (secondLargestF == 0.0f) 0.0f else totalF - secondLargestF
+            total = totalF
+            tax = taxF
+        }
+
+
+        for (line in list) {
+            val foundItem = receiptItemRegex.find(line)
+            if (foundItem != null) {
+                val itemName = foundItem.groupValues[1].trim()
+                val price = foundItem.groupValues[2].toFloat()
+                itemsList.add(ReceiptItem(itemName, price))
+            }
+        }
+
+        return ResultModel(totalPrice = total, tax = tax, receiptItems = itemsList)
     }
 
     private fun organizeElements(elements: List<Text.Element>): List<String> {
