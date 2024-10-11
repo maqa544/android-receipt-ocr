@@ -1,12 +1,13 @@
 # Receipt OCR Scanner App
 
-An Android app built to scan receipts using ML Kit's OCR capabilities. The goal of the project is to extract item names and prices from receipts.
+An Android app built to scan receipts using ML Kit's OCR capabilities. The main goal is to extract
+data from the receipt such as product names and their prices.
 
 ## Done so far
 
-- Getting image, Showing recognized text, showing processed text from a receipt
-- Rotating image/text lines and organizing text elements similar to a receipt.
-- Getting Receipt Items and Total Cost from organized receipt text using Regex pattern
+- Getting image, Recognizing text, showing processed text from a receipt
+- Rotating image/text lines and organizing text elements similar to a receipt
+- Getting Receipt Items and Total Cost from organized receipt text
 
 ## Goals
 
@@ -28,5 +29,6 @@ While ML Kit performs well on general text, it struggles with structured, tabula
 ## Tech Stack
 - **Language:** Kotlin, XML
 - **Libraries:**
-  - [ML Kit](https://developers.google.com/ml-kit) for OCR (Local)
+  - [ML Kit - Text recognition v2](https://developers.google.com/ml-kit/vision/text-recognition/v2)
+    for OCR (Local)
   - [Android-Image-Cropper](https://github.com/CanHub/Android-Image-Cropper)

@@ -34,8 +34,6 @@ import kotlin.math.abs
 
 
 class HomeFragment : BaseFragment<FragmentHomeBinding>() {
-    private val blocksRect = mutableListOf<Rect>() //Rects for displaying elements on output image
-    private val linesRect = mutableListOf<Rect>()
     private val elementsRect = mutableListOf<Rect>()
     private val elementsText = mutableListOf<Text.Element>() //All text elements
     private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
@@ -109,7 +107,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         recognizer.process(rotatedImage)
             .addOnSuccessListener { visionText ->
                 processResultText(visionText)
-                binding.ivOutImage.setImageBitmap(getOutputImage(cropped, blocksRect, linesRect, elementsRect))
                 originalText = visionText.text
             }
             .addOnFailureListener { e ->
@@ -123,19 +120,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
             return
         }
 
-        blocksRect.clear()
-        linesRect.clear()
-        elementsRect.clear()
         elementsText.clear()
-
-        blocksRect.addAll(vText.textBlocks.mapNotNull { it.boundingBox })
 
         for (block in vText.textBlocks) {
             for (line in block.lines) {
-                linesRect.add(line.boundingBox!!)
                 for (element in line.elements) {
                     elementsText.add(element)
-                    elementsRect.add(element.boundingBox!!)
                 }
             }
         }
@@ -196,37 +186,30 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
             }
         }
 
+        elementsRect.clear()
+
         val result = mutableListOf<String>()  // Convert each line of elements into a string with spacing
         for (line in lines) { // Sort each line's elements horizontally (left to right)
             val sortedLine = line.sortedBy { it.boundingBox!!.left }
+            elementsRect.addAll(sortedLine.map { it.boundingBox!! })
             val lineText = sortedLine.joinToString(" ") { it.text } // Combine elements into a single string
             result.add(lineText)
         }
 
+        binding.ivOutImage.setImageBitmap(getOutputImage(cropped, elementsRect))
+
         return result
     }
 
-    private fun getOutputImage(bitmap: Bitmap, bRect: List<Rect>, lRect: List<Rect>, eRect: List<Rect>): Bitmap { // Returns output image with blocks, lines and elements
+    private fun getOutputImage(
+        bitmap: Bitmap,
+        eRect: List<Rect>
+    ): Bitmap { // Returns output image elements on it
         val mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true)
-
-        with(Canvas(mutableBitmap)) {  // Show elements on image (output)
-            bRect.forEach {
-                drawRect(it, Paint().apply {
-                    color = Color.BLUE
-                    style = Paint.Style.STROKE
-                    strokeWidth = 3f
-                })
-            }
-            lRect.forEach {
-                drawRect(it, Paint().apply {
-                    color = Color.GREEN
-                    style = Paint.Style.STROKE
-                    strokeWidth = 3f
-                })
-            }
+        with(Canvas(mutableBitmap)) {
             eRect.forEach {
                 drawRect(it, Paint().apply {
-                    color = Color.WHITE
+                    color = Color.BLUE
                     style = Paint.Style.STROKE
                     strokeWidth = 3f
                 })
