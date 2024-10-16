@@ -78,6 +78,7 @@ class ImageDialog( //Dialog for getting image (Cam or gallery)
         binding.btnCamera.setOnClickListener {
             ImagePicker.with(this)
                 .crop()
+                .compress(1024)
                 .cameraOnly()
                 .createIntent { intent ->
                     startForProfileImageResult.launch(intent)
@@ -87,6 +88,7 @@ class ImageDialog( //Dialog for getting image (Cam or gallery)
         binding.btnGallery.setOnClickListener {
             ImagePicker.with(this)
                 .crop()
+                .compress(1024)
                 .galleryOnly()
                 .createIntent { intent ->
                     startForProfileImageResult.launch(intent)

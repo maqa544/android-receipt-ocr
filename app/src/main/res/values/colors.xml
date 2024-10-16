@@ -3,4 +3,9 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="blue1">#0E6694</color>
+
+    <!-- Here you can add color of your choice  -->
+    <color name="ucrop_color_toolbar">@color/blue1</color>
+    <color name="ucrop_color_statusbar">@color/white</color>
+    <color name="ucrop_color_widget_active">@color/black</color>
 </resources>

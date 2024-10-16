@@ -19,6 +19,7 @@ import com.example.receiptocr.utils.findFloat
 import com.example.receiptocr.utils.findSecondLargestFloat
 import com.example.receiptocr.utils.getElementsList
 import com.example.receiptocr.utils.receiptItemRegex
+import com.example.receiptocr.utils.receiptTotalsRegex
 import com.example.receiptocr.utils.rotate
 import com.google.android.material.snackbar.Snackbar
 import com.google.mlkit.vision.common.InputImage
@@ -145,11 +146,15 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), ImageListener {
 
 
         for (line in list) {
-            val foundItem = receiptItemRegex.find(line)
-            if (foundItem != null) {
-                val itemName = foundItem.groupValues[1].trim()
-                val price = foundItem.groupValues[2].toFloat()
-                itemsList.add(ReceiptItem(itemName, price))
+            if (receiptTotalsRegex.find(line) == null) { // Check if line have a total
+                val foundItem = receiptItemRegex.find(line)
+                if (foundItem != null) { // If there is item
+                    val itemName = foundItem.groupValues[1].trim()
+                    val price = foundItem.groupValues[2].toFloat()
+                    if (price > 0.0f) {
+                        itemsList.add(ReceiptItem(itemName, price))
+                    }
+                }
             }
         }
 
