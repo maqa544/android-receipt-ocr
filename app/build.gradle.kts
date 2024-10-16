@@ -52,6 +52,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-    implementation(libs.android.image.cropper)
+    implementation("com.github.dhaval2404:imagepicker:2.1")
     implementation (libs.text.recognition)
 }

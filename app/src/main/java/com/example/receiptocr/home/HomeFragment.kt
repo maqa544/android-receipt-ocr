@@ -1,83 +1,71 @@
 package com.example.receiptocr.home
 
 import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
 import android.view.View
 import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
-import com.canhub.cropper.CropImageContract
-import com.canhub.cropper.CropImageContractOptions
-import com.canhub.cropper.CropImageOptions
-import com.canhub.cropper.CropImageView
 import com.example.receiptocr.R
 import com.example.receiptocr.base.BaseFragment
 import com.example.receiptocr.data.ReceiptItem
 import com.example.receiptocr.data.ResultModel
 import com.example.receiptocr.databinding.FragmentHomeBinding
-import com.example.receiptocr.dialogs.ResultDialog
+import com.example.receiptocr.dialogs.image.ImageDialog
+import com.example.receiptocr.dialogs.image.ImageListener
+import com.example.receiptocr.dialogs.result.ResultDialog
 import com.example.receiptocr.utils.findFloat
 import com.example.receiptocr.utils.findSecondLargestFloat
+import com.example.receiptocr.utils.getElementsList
 import com.example.receiptocr.utils.receiptItemRegex
 import com.example.receiptocr.utils.rotate
 import com.google.android.material.snackbar.Snackbar
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.Text
-import com.google.mlkit.vision.text.Text.Element
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import java.util.Collections
 import kotlin.math.abs
 
 
-class HomeFragment : BaseFragment<FragmentHomeBinding>() {
+class HomeFragment : BaseFragment<FragmentHomeBinding>(), ImageListener {
+
+    private lateinit var croppedIm: Bitmap //Cropped Image and its rotation
+    private var camRotationIm: Int = 0
+
     private val elementsRect = mutableListOf<Rect>()
     private val elementsText = mutableListOf<Text.Element>() //All text elements
     private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
-    private var originalText: String = ""
     private var result = ResultModel(receiptItems = emptyList())
-    lateinit var cropped: Bitmap
-    var rotation: Int = 0
-    private lateinit var cropImage: ActivityResultLauncher<CropImageContractOptions>
-    private val cropImageContractOptions = CropImageContractOptions(
-        null,
-        CropImageOptions(imageSourceIncludeGallery = true, imageSourceIncludeCamera = true)
-    )
+
+    //TODO: Output bitmap (rotated) loosing quality/bloor - track/fix bug
 
     override fun getLayoutID(): Int = R.layout.fragment_home
 
     override fun setUpViews() {
         binding.lifecycleOwner = viewLifecycleOwner
         super.setUpViews()
-
-        cropImage = registerForActivityResult<CropImageContractOptions, CropImageView.CropResult>(
-            CropImageContract()
-        ) { result: CropImageView.CropResult ->
-            if (result.isSuccessful) {
-                cropped =
-                    BitmapFactory.decodeFile(result.getUriFilePath(requireContext(), true))
-                rotation = result.rotation
-                binding.ivImage.setImageBitmap(cropped) // Displaying image in home screen
-            }
-        }
     }
 
     override fun observeView() {
-        binding.btnAdd.setOnClickListener { // Getting image for OCR
-            cropImage.launch(cropImageContractOptions)
+
+        binding.btnAdd.setOnClickListener { // Getting image
+            ImageDialog().show(childFragmentManager, ImageDialog.TAG)
         }
+
         binding.btnScan.setOnClickListener { // Start OCR if there is an image
-            if (::cropped.isInitialized) {
+            if (::croppedIm.isInitialized) {
                 showSnackBar("Scanning...", it)
-                val srcImage = InputImage.fromBitmap(cropped, rotation)
+                val srcImage = InputImage.fromBitmap(croppedIm, camRotationIm)
                 recognizer.process(srcImage)
+
                     .addOnSuccessListener { visionText ->
-                        val elementsAngle = getElementsForText(visionText).map { el -> el.angle }
-                        val averageAngle = elementsAngle.average() // Getting the average angle of text form the source image
-                        processImage(cropped, averageAngle.toFloat())
+                        // Getting the average angle of text form the source image
+                        val elementsAngle = visionText.getElementsList().map { el -> el.angle }
+                        val averageAngle = elementsAngle.average()
+
+                        processImage(croppedIm, averageAngle.toFloat())
                     }
                     .addOnFailureListener { e ->
                         Toast.makeText(
@@ -99,22 +87,24 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         super.observeView()
     }
 
-    fun processImage(srcBitmap: Bitmap, textAverageAngle: Float) {
-        binding.angle = textAverageAngle.toString()
-        val rotatedBitmap = srcBitmap.rotate(-textAverageAngle) // Rotating source image before getting text
-        cropped = rotatedBitmap
+    private fun processImage(srcBitmap: Bitmap, textAverageAngle: Float) {
+        binding.angle = textAverageAngle.toString() //View
+
+        val rotatedBitmap =
+            srcBitmap.rotate(-textAverageAngle) // Rotating image before getting text
+        croppedIm = rotatedBitmap
+
         val rotatedImage = InputImage.fromBitmap(rotatedBitmap, 0)
         recognizer.process(rotatedImage)
             .addOnSuccessListener { visionText ->
                 processResultText(visionText)
-                originalText = visionText.text
             }
             .addOnFailureListener { e ->
                 Toast.makeText(requireContext(), "Error -> ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
-    fun processResultText(vText: Text) {
+    private fun processResultText(vText: Text) {
         if (vText.text.isBlank()) {
             Toast.makeText(requireContext(), "No text found, try again", Toast.LENGTH_SHORT).show()
             return
@@ -139,7 +129,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         binding.tvOutput.text = outputText // Displaying organized text
     }
 
-    fun getResults(list: List<String>, wholeText: String): ResultModel {
+    private fun getResults(list: List<String>, wholeText: String): ResultModel {
         var total = 0f
         var tax = 0f
         val itemsList = mutableListOf<ReceiptItem>()
@@ -188,15 +178,17 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
 
         elementsRect.clear()
 
-        val result = mutableListOf<String>()  // Convert each line of elements into a string with spacing
+        val result =
+            mutableListOf<String>()  // Convert each line of elements into a string with spacing
         for (line in lines) { // Sort each line's elements horizontally (left to right)
             val sortedLine = line.sortedBy { it.boundingBox!!.left }
             elementsRect.addAll(sortedLine.map { it.boundingBox!! })
-            val lineText = sortedLine.joinToString(" ") { it.text } // Combine elements into a single string
+            val lineText =
+                sortedLine.joinToString(" ") { it.text } // Combine elements into a single string
             result.add(lineText)
         }
 
-        binding.ivOutImage.setImageBitmap(getOutputImage(cropped, elementsRect))
+        binding.ivOutImage.setImageBitmap(getOutputImage(croppedIm, elementsRect))
 
         return result
     }
@@ -209,26 +201,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         with(Canvas(mutableBitmap)) {
             eRect.forEach {
                 drawRect(it, Paint().apply {
-                    color = Color.BLUE
+                    color = Color.GREEN
                     style = Paint.Style.STROKE
-                    strokeWidth = 3f
+                    strokeWidth = 2f
                 })
             }
         }
 
         return mutableBitmap
-    }
-
-    private fun getElementsForText(text: Text): List<Element> {
-        val mlElements = mutableListOf<Element>()
-        for (block in text.textBlocks) {
-            for (line in block.lines) {
-                for (element in line.elements) {
-                    mlElements.add(element)
-                }
-            }
-        }
-        return mlElements
     }
 
     private fun compareEls(
@@ -264,5 +244,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>() {
         Snackbar.make(contextView, text, 800)
             .show()
 
+    }
+
+    override fun onImageReceived(bitmap: Bitmap) {
+        croppedIm = bitmap
+        camRotationIm = 0
+        binding.ivImage.setImageBitmap(croppedIm) // Displaying src image
     }
 }

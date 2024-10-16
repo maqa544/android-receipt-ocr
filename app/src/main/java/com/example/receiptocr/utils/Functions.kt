@@ -2,11 +2,25 @@ package com.example.receiptocr.utils
 
 import android.graphics.Bitmap
 import android.graphics.Matrix
+import com.google.mlkit.vision.text.Text
+import com.google.mlkit.vision.text.Text.Element
 import java.util.TreeSet
 
 fun Bitmap.rotate(degrees: Float): Bitmap {
     val matrix = Matrix().apply { postRotate(degrees) }
     return Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
+}
+
+fun Text.getElementsList(): List<Element> {
+    val mlElements = mutableListOf<Element>()
+    for (block in this.textBlocks) {
+        for (line in block.lines) {
+            for (element in line.elements) {
+                mlElements.add(element)
+            }
+        }
+    }
+    return mlElements
 }
 
 fun String.findFloat(): ArrayList<Float> {

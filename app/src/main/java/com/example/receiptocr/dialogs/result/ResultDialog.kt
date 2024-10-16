@@ -1,4 +1,4 @@
-package com.example.receiptocr.dialogs
+package com.example.receiptocr.dialogs.result
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,7 +9,7 @@ import androidx.fragment.app.DialogFragment
 import com.example.receiptocr.R
 import com.example.receiptocr.data.ResultModel
 import com.example.receiptocr.databinding.DialogResultBinding
-import com.example.receiptocr.dialogs.adapter.ReceiptAdapter
+import com.example.receiptocr.dialogs.result.adapter.ReceiptAdapter
 
 class ResultDialog(private val result: ResultModel) : DialogFragment() {
     private lateinit var binding: DialogResultBinding

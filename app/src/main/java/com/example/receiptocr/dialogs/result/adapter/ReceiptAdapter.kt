@@ -1,4 +1,4 @@
-package com.example.receiptocr.dialogs.adapter
+package com.example.receiptocr.dialogs.result.adapter
 
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
