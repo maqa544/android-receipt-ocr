@@ -6,7 +6,7 @@
     <data>
         <variable
             name="angle"
-            type="String"/>
+            type="Float" />
 
     </data>
 
@@ -38,41 +38,74 @@
                 android:id="@+id/btnScan"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
                 android:layout_marginTop="24dp"
                 android:backgroundTint="@color/blue1"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
                 android:text="Scan"
+                android:layout_marginEnd="14dp"
                 android:textSize="18sp"
-                app:layout_constraintEnd_toStartOf="@+id/btnResult"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toEndOf="@+id/btnAdd"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
+
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnResult"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
                 android:backgroundTint="@color/blue1"
                 android:paddingTop="12dp"
                 android:paddingBottom="12dp"
+                android:layout_marginStart="14dp"
                 android:layout_marginEnd="14dp"
                 android:text="Result"
+                android:visibility="gone"
                 android:textSize="18sp"
+                app:layout_constraintBottom_toBottomOf="@+id/tvOutputBtns"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="@+id/tvOutputBtns" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="14dp"
+                android:backgroundTint="@color/blue1"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:text="Text"
+                android:textSize="18sp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@+id/tvOutputBtns"
+                app:layout_constraintEnd_toStartOf="@+id/btnResult"
+                app:layout_constraintTop_toTopOf="@+id/tvOutputBtns" />
+
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tvOutputBtns"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="14dp"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/shape_bg"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:text="Output:"
+                android:textAlignment="center"
+                android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionMode.Title"
+                android:textSize="20sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btnAdd" />
 
             <ImageView
                 android:id="@+id/ivImage"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_height="400dp"
                 android:layout_marginHorizontal="14dp"
                 android:layout_marginTop="20dp"
                 android:background="@drawable/shape_bg"
                 app:layout_constraintDimensionRatio="3:4"
-                app:layout_constraintTop_toBottomOf="@+id/btnScan" />
+                app:layout_constraintTop_toBottomOf="@+id/tvOutputBtns" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/materialTextView"
@@ -81,28 +114,14 @@
                 android:layout_marginHorizontal="14dp"
                 android:layout_marginTop="16dp"
                 android:background="@drawable/shape_bg"
-                android:paddingVertical="4dp"
-                android:text="Output:"
+                android:paddingVertical="6dp"
+                android:text="Image Elements:"
                 android:textAlignment="center"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-                android:textSize="24sp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionMode.Title"
+                android:textSize="20sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/ivImage" />
-
-            <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/tvOutput"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:paddingHorizontal="8dp"
-                android:textColor="@color/blue1"
-                android:textIsSelectable="true"
-                android:textSize="16sp"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/materialTextView"
-                tools:text="23232 \Testtest \ntest ttt tess ttt1232 4324" />
 
             <ImageView
                 android:id="@+id/ivOutImage"
@@ -116,7 +135,7 @@
                 app:layout_constraintDimensionRatio="3:4"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/tvOutput" />
+                app:layout_constraintTop_toBottomOf="@+id/materialTextView" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tvAngle"
@@ -129,8 +148,8 @@
                 android:paddingHorizontal="12dp"
                 android:text="@{@string/average_text_angle(angle)}"
                 android:textAlignment="center"
-                android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-                android:textSize="20sp"
+                android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionMode.Title"
+                android:textSize="18sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/ivOutImage" />
         </androidx.constraintlayout.widget.ConstraintLayout>

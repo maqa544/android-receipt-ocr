@@ -37,6 +37,7 @@ class ImageDialog( //Dialog for getting image (Cam or gallery)
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
                 val resultCode = result.resultCode
                 val data = result.data
+                binding.scanning = false
                 when (resultCode) {
                     Activity.RESULT_OK -> {
                         //Image Uri will not be null for RESULT_OK
@@ -53,7 +54,6 @@ class ImageDialog( //Dialog for getting image (Cam or gallery)
                         }
                         passImage(bitmap)
                         dialog?.dismiss()
-
                     }
 
                     ImagePicker.RESULT_ERROR -> {
@@ -76,6 +76,7 @@ class ImageDialog( //Dialog for getting image (Cam or gallery)
         }
 
         binding.btnCamera.setOnClickListener {
+            binding.scanning = true
             ImagePicker.with(this)
                 .crop()
                 .compress(1024)
@@ -86,6 +87,7 @@ class ImageDialog( //Dialog for getting image (Cam or gallery)
         }
 
         binding.btnGallery.setOnClickListener {
+            binding.scanning = true
             ImagePicker.with(this)
                 .crop()
                 .compress(1024)

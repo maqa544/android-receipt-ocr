@@ -2,9 +2,9 @@
     <string name="app_name">ReceiptOcr</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="receipt_total">Receipt Total: %s</string>
-    <string name="receipt_tax">Receipt Tax: %s</string>
-    <string name="average_text_angle">Average text angle: %s</string>
+    <string name="receipt_total">Receipt Total: %.2f</string>
+    <string name="receipt_tax">Receipt Tax: %.2f</string>
+    <string name="average_text_angle">Average text angle: %.2f</string>
     <string name="item_name">Name: %s</string>
-    <string name="item_price">Price: %s $</string>
+    <string name="item_price">Price: %.2f $</string>
 </resources>

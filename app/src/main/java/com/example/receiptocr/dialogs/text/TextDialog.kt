@@ -1,4 +1,4 @@
-package com.example.receiptocr.dialogs.result
+package com.example.receiptocr.dialogs.text
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,32 +7,25 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.DialogFragment
 import com.example.receiptocr.R
-import com.example.receiptocr.data.ResultModel
-import com.example.receiptocr.databinding.DialogResultBinding
-import com.example.receiptocr.dialogs.result.adapter.ReceiptAdapter
+import com.example.receiptocr.databinding.DialogTextBinding
 
-class ResultDialog(private val result: ResultModel) : DialogFragment() {
-    private lateinit var binding: DialogResultBinding
+
+class TextDialog(private val text: String) : DialogFragment() { // Dialog for displaying text
+    private lateinit var binding: DialogTextBinding
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         binding =
-            DataBindingUtil.inflate(inflater, R.layout.dialog_result, container, false)
+            DataBindingUtil.inflate(inflater, R.layout.dialog_text, container, false)
         binding.lifecycleOwner = viewLifecycleOwner
+
+        binding.tvText.text = text
 
         binding.btnClose.setOnClickListener {
             dialog?.dismiss()
         }
-
-        binding.receiptTotal = result.totalPrice
-        binding.receiptTax = result.tax
-
-        binding.receiptRv.adapter =
-            ReceiptAdapter().apply {
-                setData(result.receiptItems)
-            }
 
         return binding.root
     }
@@ -51,6 +44,7 @@ class ResultDialog(private val result: ResultModel) : DialogFragment() {
     }
 
     companion object {
-        const val TAG = "ResultDialog"
+        const val TAG = "TextDialog"
     }
+
 }

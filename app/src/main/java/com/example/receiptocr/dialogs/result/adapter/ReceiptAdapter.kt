@@ -32,7 +32,7 @@ class ReceiptAdapter() :
         fun bind(receiptItem: ReceiptItem, position: Int) {
             //Views
             itemBinding.name = receiptItem.name
-            itemBinding.price = receiptItem.price.toString()
+            itemBinding.price = receiptItem.price
         }
     }
 

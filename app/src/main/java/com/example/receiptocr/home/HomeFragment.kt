@@ -15,6 +15,7 @@ import com.example.receiptocr.databinding.FragmentHomeBinding
 import com.example.receiptocr.dialogs.image.ImageDialog
 import com.example.receiptocr.dialogs.image.ImageListener
 import com.example.receiptocr.dialogs.result.ResultDialog
+import com.example.receiptocr.dialogs.text.TextDialog
 import com.example.receiptocr.utils.findFloat
 import com.example.receiptocr.utils.findSecondLargestFloat
 import com.example.receiptocr.utils.getElementsList
@@ -40,7 +41,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), ImageListener {
     private val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
     private var result = ResultModel(receiptItems = emptyList())
 
-    //TODO: Output bitmap (rotated) loosing quality/bloor - track/fix bug
+    //TODO: Bug - Output bitmap (rotated) loosing quality/bloor effect
 
     override fun getLayoutID(): Int = R.layout.fragment_home
 
@@ -60,9 +61,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), ImageListener {
                 showSnackBar("Scanning...", it)
                 val srcImage = InputImage.fromBitmap(croppedIm, camRotationIm)
                 recognizer.process(srcImage)
-
                     .addOnSuccessListener { visionText ->
                         // Getting the average angle of text form the source image
+                        if (visionText.text.isBlank() || visionText.text.isEmpty()) {
+                            //No text found
+                            showSnackBar("Text not found. Try again", it)
+                            return@addOnSuccessListener
+                        }
+
                         val elementsAngle = visionText.getElementsList().map { el -> el.angle }
                         val averageAngle = elementsAngle.average()
 
@@ -85,11 +91,15 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), ImageListener {
             ResultDialog(result).show(childFragmentManager, ResultDialog.TAG)
         }
 
+        binding.btnText.setOnClickListener {
+            TextDialog(result.fullText).show(childFragmentManager, ResultDialog.TAG)
+        }
+
         super.observeView()
     }
 
     private fun processImage(srcBitmap: Bitmap, textAverageAngle: Float) {
-        binding.angle = textAverageAngle.toString() //View
+        binding.angle = textAverageAngle //Angle text
 
         val rotatedBitmap =
             srcBitmap.rotate(-textAverageAngle) // Rotating image before getting text
@@ -98,36 +108,24 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), ImageListener {
         val rotatedImage = InputImage.fromBitmap(rotatedBitmap, 0)
         recognizer.process(rotatedImage)
             .addOnSuccessListener { visionText ->
-                processResultText(visionText)
+                if (visionText.text.isBlank()) {
+                    Toast.makeText(requireContext(), "No text found, try again", Toast.LENGTH_SHORT)
+                        .show()
+                    return@addOnSuccessListener
+                }
+
+                elementsText.clear()
+                elementsText.addAll(visionText.getElementsList()) //Text.Elements List
+
+                val organizedList = organizeElements(elementsText)
+                val outputText = organizedList.joinToString(separator = "\n")
+                result = getResults(organizedList, outputText)
+                binding.btnResult.visibility = View.VISIBLE
+                binding.btnText.visibility = View.VISIBLE
             }
             .addOnFailureListener { e ->
                 Toast.makeText(requireContext(), "Error -> ${e.message}", Toast.LENGTH_SHORT).show()
             }
-    }
-
-    private fun processResultText(vText: Text) {
-        if (vText.text.isBlank()) {
-            Toast.makeText(requireContext(), "No text found, try again", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        elementsText.clear()
-
-        for (block in vText.textBlocks) {
-            for (line in block.lines) {
-                for (element in line.elements) {
-                    elementsText.add(element)
-                }
-            }
-        }
-
-        elementsText //Text.Elements List
-
-        val organizedList = organizeElements(elementsText)
-        val outputText = organizedList.joinToString(separator = "\n")
-        result = getResults(organizedList, outputText)
-
-        binding.tvOutput.text = outputText // Displaying organized text
     }
 
     private fun getResults(list: List<String>, wholeText: String): ResultModel {
@@ -158,7 +156,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(), ImageListener {
             }
         }
 
-        return ResultModel(totalPrice = total, tax = tax, receiptItems = itemsList)
+        return ResultModel(
+            totalPrice = total,
+            tax = tax,
+            receiptItems = itemsList,
+            fullText = wholeText
+        )
     }
 
     private fun organizeElements(elements: List<Text.Element>): List<String> {

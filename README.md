@@ -19,6 +19,12 @@ data from the receipt such as product names and their prices.
   - ⏩ Store name
   - ⏩ Store address
 
+## Preview
+
+|                      Adding Receipt                      |                      Found Elements                      |                     Receipt Details                      |                       Receipt Text                       |
+|:--------------------------------------------------------:|:--------------------------------------------------------:|:--------------------------------------------------------:|:--------------------------------------------------------:|
+| <img src="https://i.imgur.com/LszKOvb.png" width="200"/> | <img src="https://i.imgur.com/TcfJXeX.png" width="200"/> | <img src="https://i.imgur.com/OsEYnu3.png" width="200"/> | <img src="https://i.imgur.com/ARmHj2i.png" width="200"/> |
+
 ## Item Recognition and Text Alignment
 While ML Kit performs well on general text, it struggles with structured, tabular data, such as receipts. Typically, item names and prices are detected as separate text blocks, making it difficult to maintain alignment
  - Text is captured in a hierarchy of Blocks, Lines, and Elements. Each [Text.Element](https://developers.google.com/android/reference/com/google/mlkit/vision/text/Text.Element) includes its position (`Rect`), which helps reconstruct the layout by placing the elements based on their coordinates

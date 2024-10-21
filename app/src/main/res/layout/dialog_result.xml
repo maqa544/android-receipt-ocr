@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
+
         <variable
             name="receiptTotal"
-            type="String" />
+            type="Float" />
+
         <variable
             name="receiptTax"
-            type="String" />
+            type="Float" />
 
     </data>
 
@@ -26,10 +28,11 @@
             android:layout_marginStart="24dp"
             android:layout_marginTop="20dp"
             android:background="@drawable/shape_bg"
-            android:textColor="@color/black"
+            android:backgroundTint="@color/blue3"
             android:padding="14dp"
             android:text="@{@string/receipt_total(receiptTotal)}"
             android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionMode.Title"
+            android:textColor="@color/black"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -42,11 +45,12 @@
             android:layout_marginStart="24dp"
             android:layout_marginTop="12dp"
             android:background="@drawable/shape_bg"
+            android:backgroundTint="@color/blue3"
             android:padding="14dp"
             android:text="@{@string/receipt_tax(receiptTax)}"
             android:textAppearance="@style/TextAppearance.AppCompat.Widget.ActionMode.Title"
-            android:textSize="18sp"
             android:textColor="@color/black"
+            android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tvTotal"
             tools:text="Receipt Tax: 123.44 " />
@@ -56,12 +60,13 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:clipToPadding="false"
-            android:paddingBottom="300dp"
+            android:layout_marginBottom="16dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            app:layout_constraintBottom_toTopOf="@+id/btnClose"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvTax" />
+            app:layout_constraintTop_toBottomOf="@+id/tvTax"
+            app:layout_constraintVertical_bias="0.0" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnClose"
@@ -71,15 +76,12 @@
             android:backgroundTint="@color/blue1"
             android:paddingTop="12dp"
             android:paddingBottom="12dp"
-            android:layout_marginTop="32dp"
             android:text="Close Dialog"
             android:textSize="20sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/receiptRv"
-            app:layout_constraintVertical_bias="1.0" />
+            app:layout_constraintStart_toStartOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
