@@ -15,15 +15,14 @@ data from the receipt such as product names and their prices.
 - ✅️ Extracting the Total Amount of receipts.
 - Additional:
   - ✅️ Tax
-  - ⏩️ Receipt date
-  - ⏩ Store name
-  - ⏩ Store address
+  - Receipt date
+  - Store name
 
 ## Preview
 
 |                      Adding Receipt                      |                      Found Elements                      |                     Receipt Details                      |                       Receipt Text                       |
 |:--------------------------------------------------------:|:--------------------------------------------------------:|:--------------------------------------------------------:|:--------------------------------------------------------:|
-| <img src="https://i.imgur.com/LszKOvb.png" width="200"/> | <img src="https://i.imgur.com/TcfJXeX.png" width="200"/> | <img src="https://i.imgur.com/OsEYnu3.png" width="200"/> | <img src="https://i.imgur.com/ARmHj2i.png" width="200"/> |
+| <img src="https://i.imgur.com/CdtW9uB.png" width="200"/> | <img src="https://i.imgur.com/QxaCyZK.png" width="200"/> | <img src="https://i.imgur.com/KadM3PS.png" width="200"/> | <img src="https://i.imgur.com/6vomV4t.png" width="200"/> |
 
 ## Item Recognition and Text Alignment
 While ML Kit performs well on general text, it struggles with structured, tabular data, such as receipts. Typically, item names and prices are detected as separate text blocks, making it difficult to maintain alignment
@@ -34,7 +33,7 @@ While ML Kit performs well on general text, it struggles with structured, tabula
 
 ## Tech Stack
 
-- **Language:** Kotlin, Views/XML
+- **Used:** Kotlin, Views/XML, Dialog, RecyclerView
 - **Libraries:**
   - [ML Kit - Text recognition v2](https://developers.google.com/ml-kit/vision/text-recognition/v2)
     for OCR (Local)
